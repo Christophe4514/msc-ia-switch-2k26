@@ -216,3 +216,9 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Large OPUS bitext archives and extracted moses files
+dataset/**/raw/
+dataset/**/moses/
+!dataset/**/raw/.gitkeep
+!dataset/**/moses/.gitkeep
