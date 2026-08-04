@@ -1,0 +1,45 @@
+{
+  "project": "msc-ia-switch-2k26",
+  "description": "French to Congolese national language parallel data for MT",
+  "opus_mt_models": {
+    "fr-sw": {
+      "label": "Swahili (Congo)",
+      "opus_codes": ["swc", "sw"],
+      "train_readme": "https://github.com/Helsinki-NLP/OPUS-MT-train/tree/master/models/fr-swc",
+      "weights": "https://object.pouta.csc.fi/OPUS-MT-models/fr-swc/opus-2020-01-16.zip",
+      "huggingface": "Helsinki-NLP/opus-mt-fr-swc",
+      "bleu_jw300": 28.2
+    },
+    "fr-ln": {
+      "label": "Lingala",
+      "opus_codes": ["ln"],
+      "train_readme": "https://github.com/Helsinki-NLP/OPUS-MT-train/tree/master/models/fr-ln",
+      "weights": "https://object.pouta.csc.fi/OPUS-MT-models/fr-ln/opus-2020-01-09.zip",
+      "huggingface": "Helsinki-NLP/opus-mt-fr-ln",
+      "bleu_jw300": 30.5
+    },
+    "fr-kg": {
+      "label": "Kikongo",
+      "opus_codes": ["kg"],
+      "train_readme": "https://github.com/Helsinki-NLP/OPUS-MT-train/tree/master/models/fr-kg",
+      "weights": "https://object.pouta.csc.fi/OPUS-MT-models/fr-kg/opus-2020-01-09.zip",
+      "huggingface": "Helsinki-NLP/opus-mt-fr-kg",
+      "bleu_jw300": 30.4
+    },
+    "fr-lu": {
+      "label": "Tshiluba",
+      "opus_codes": ["lu", "lua"],
+      "train_readme": [
+        "https://github.com/Helsinki-NLP/OPUS-MT-train/tree/master/models/fr-lu",
+        "https://github.com/Helsinki-NLP/OPUS-MT-train/tree/master/models/fr-lua"
+      ],
+      "weights": {
+        "fr-lu": "https://object.pouta.csc.fi/OPUS-MT-models/fr-lu/opus-2020-01-20.zip",
+        "fr-lua": "https://object.pouta.csc.fi/OPUS-MT-models/fr-lua/opus-2020-01-09.zip"
+      },
+      "huggingface": ["Helsinki-NLP/opus-mt-fr-lu", "Helsinki-NLP/opus-mt-fr-lua"],
+      "bleu_jw300": { "fr-lu": 25.5, "fr-lua": 27.3 }
+    }
+  },
+  "note": "Original OPUS-MT training used JW300 (no longer publicly redistributed). Current bitexts are mainly NLLB + smaller OPUS corpora."
+}

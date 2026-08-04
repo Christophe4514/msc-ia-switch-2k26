@@ -1,0 +1,38 @@
+{
+  "pair": "fr-lu",
+  "target": "lua",
+  "config": {
+    "min_chars": 3,
+    "max_chars": 500,
+    "max_words": 100,
+    "max_len_ratio": 3.0,
+    "min_laser_score": 1.05,
+    "train_ratio": 0.8,
+    "valid_ratio": 0.1,
+    "test_ratio": 0.1,
+    "seed": 42
+  },
+  "corpora": [
+    "NLLB-fr-lua.txt"
+  ],
+  "filter": {
+    "raw_pairs": 592536,
+    "kept": 276579,
+    "empty": 10,
+    "too_short": 54,
+    "too_long": 0,
+    "bad_ratio": 2691,
+    "identical": 2,
+    "low_score": 305820,
+    "duplicates": 7380,
+    "sources": {
+      "NLLB-fr-lua.txt": 592536
+    }
+  },
+  "split_counts": {
+    "train": 221263,
+    "valid": 27657,
+    "test": 27659
+  },
+  "output_dir": "fr-lu\\splits"
+}

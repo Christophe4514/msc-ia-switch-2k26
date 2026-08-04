@@ -216,3 +216,26 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Large OPUS bitext archives and extracted moses files
+dataset/**/raw/
+dataset/**/moses/
+dataset/**/splits/*.fr
+dataset/**/splits/*.ln
+dataset/**/splits/*.kg
+dataset/**/splits/*.lua
+dataset/**/splits/*.sw
+dataset/**/splits/*.swc
+!dataset/**/raw/.gitkeep
+!dataset/**/moses/.gitkeep
+# Keep split stats in git
+!dataset/**/splits/stats.json
+
+# Training artifacts
+train/.venv/
+train/logs/
+outputs/
+*.pt
+*.bin
+runs/
+

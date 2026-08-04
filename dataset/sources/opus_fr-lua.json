@@ -1,0 +1,1 @@
+{"corpora":[{"alignment_pairs":592536,"corpus":"NLLB","documents":"","id":664921,"latest":"True","preprocessing":"moses","size":24981,"source":"fr","source_tokens":5065225,"target":"lua","target_tokens":5030065,"url":"https://object.pouta.csc.fi/OPUS-NLLB/v1/moses/fr-lua.txt.zip","version":"v1"}]}

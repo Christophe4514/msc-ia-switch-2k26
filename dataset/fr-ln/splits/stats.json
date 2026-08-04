@@ -1,0 +1,48 @@
+{
+  "pair": "fr-ln",
+  "target": "ln",
+  "config": {
+    "min_chars": 3,
+    "max_chars": 500,
+    "max_words": 100,
+    "max_len_ratio": 3.0,
+    "min_laser_score": 1.05,
+    "train_ratio": 0.8,
+    "valid_ratio": 0.1,
+    "test_ratio": 0.1,
+    "seed": 42
+  },
+  "corpora": [
+    "MultiCCAligned-fr-ln.txt",
+    "NLLB-fr-ln.txt",
+    "Tatoeba-fr-ln.txt",
+    "tico-19-fr-ln.txt",
+    "wikimedia-fr-ln.txt",
+    "XLEnt-fr-ln.txt"
+  ],
+  "filter": {
+    "raw_pairs": 713599,
+    "kept": 357866,
+    "empty": 24,
+    "too_short": 130,
+    "too_long": 261,
+    "bad_ratio": 1250,
+    "identical": 148,
+    "low_score": 345721,
+    "duplicates": 8199,
+    "sources": {
+      "MultiCCAligned-fr-ln.txt": 9410,
+      "NLLB-fr-ln.txt": 691883,
+      "Tatoeba-fr-ln.txt": 56,
+      "tico-19-fr-ln.txt": 3071,
+      "wikimedia-fr-ln.txt": 7867,
+      "XLEnt-fr-ln.txt": 1312
+    }
+  },
+  "split_counts": {
+    "train": 286292,
+    "valid": 35786,
+    "test": 35788
+  },
+  "output_dir": "fr-ln\\splits"
+}

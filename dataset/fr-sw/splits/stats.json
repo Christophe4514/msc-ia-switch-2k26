@@ -1,0 +1,46 @@
+{
+  "pair": "fr-sw",
+  "target": "sw",
+  "config": {
+    "min_chars": 3,
+    "max_chars": 500,
+    "max_words": 100,
+    "max_len_ratio": 3.0,
+    "min_laser_score": 1.05,
+    "train_ratio": 0.8,
+    "valid_ratio": 0.1,
+    "test_ratio": 0.1,
+    "seed": 42
+  },
+  "corpora": [
+    "GlobalVoices-fr-sw.txt",
+    "Tatoeba-fr-swc.txt",
+    "TED2020-fr-sw.txt",
+    "tico-19-fr-sw.txt",
+    "wikimedia-fr-sw.txt"
+  ],
+  "filter": {
+    "raw_pairs": 35648,
+    "kept": 33787,
+    "empty": 930,
+    "too_short": 59,
+    "too_long": 279,
+    "bad_ratio": 199,
+    "identical": 108,
+    "low_score": 0,
+    "duplicates": 286,
+    "sources": {
+      "GlobalVoices-fr-sw.txt": 19455,
+      "Tatoeba-fr-swc.txt": 172,
+      "TED2020-fr-sw.txt": 9606,
+      "tico-19-fr-sw.txt": 3071,
+      "wikimedia-fr-sw.txt": 3344
+    }
+  },
+  "split_counts": {
+    "train": 27029,
+    "valid": 3378,
+    "test": 3380
+  },
+  "output_dir": "fr-sw\\splits"
+}
