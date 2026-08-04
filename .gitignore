@@ -233,6 +233,7 @@ dataset/**/splits/*.swc
 
 # Training artifacts
 train/.venv/
+train/logs/
 outputs/
 *.pt
 *.bin

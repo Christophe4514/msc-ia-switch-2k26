@@ -1,4 +1,4 @@
-model_name: facebook/nllb-200-distilled-600M
+﻿model_name: facebook/nllb-200-distilled-600M
 pair: fr-lu
 src_lang: fra_Latn
 tgt_lang: lua_Latn
@@ -22,8 +22,10 @@ warmup_ratio: 0.03
 fp16: true
 bf16: false
 logging_steps: 50
-eval_steps: 500
-save_steps: 500
+eval_strategy: epoch
+save_strategy: epoch
+metric_for_best_model: eval_bleu
+greater_is_better: true
 save_total_limit: 2
 predict_with_generate: true
 generation_max_length: 128

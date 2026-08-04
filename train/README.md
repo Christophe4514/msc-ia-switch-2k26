@@ -1,43 +1,63 @@
 # Phase 2 — Adaptation NLLB-200 par LoRA (PEFT)
 
 Fine-tuning Parameter-Efficient (LoRA) de `facebook/nllb-200-distilled-600M`
-sur les splits nettoyés `dataset/<paire>/splits/` (FR → langues nationales RDC).
+sur les splits `dataset/<paire>/splits/`.
+
+## Point d'entrée général (racine du repo)
+
+```powershell
+# Activer le venv
+.\train\.venv\Scripts\Activate.ps1
+
+# Entraîner une paire (BLEU/WER/accuracy par epoch + PNG)
+python main.py train --config train/configs/fr-ln.yaml
+
+# Entraîner toutes les paires
+python main.py train-all
+
+# Évaluer sur le test set (JSON + barre PNG)
+python main.py evaluate --config train/configs/fr-ln.yaml --split test
+
+# Tester le modèle
+python main.py test --config train/configs/fr-ln.yaml --text "Bonjour, comment allez-vous ?"
+python main.py test --config train/configs/fr-ln.yaml --interactive
+```
 
 ## Prérequis
 
 - GPU NVIDIA (RTX 4060 8 Go OK)
-- Python 3.10+
+- **Python 3.11–3.13**
 
 ```powershell
 cd train
-python -m venv .venv
+py -3.13 -m venv .venv
 .\.venv\Scripts\Activate.ps1
+pip install torch --index-url https://download.pytorch.org/whl/cu124
 pip install -r requirements.txt
 ```
 
-## Entraînement
+## Sorties après `train`
 
-```powershell
-# Lingala (recommandé en premier)
-python train_lora.py --config configs/fr-ln.yaml
-
-# Smoke test rapide (~2–5 min)
-python train_lora.py --config configs/fr-ln.yaml --max-train-samples 2000 --max-eval-samples 200
+```
+outputs/nllb-lora-fr-ln/
+  adapter/
+  trainer_history.json
+  eval_valid.json
+  plots/
+    fr-ln_loss.png
+    fr-ln_bleu_chrf.png
+    fr-ln_wer_accuracy.png
+    fr-ln_dashboard.png
 ```
 
-Autres paires : `configs/fr-kg.yaml`, `fr-lu.yaml`, `fr-sw.yaml`.
+## Métriques
 
-## Évaluation (BLEU / chrF)
-
-```powershell
-# Après entraînement
-python evaluate.py --config configs/fr-ln.yaml --split test
-
-# Baseline NLLB sans LoRA (pour mesurer le gain)
-python evaluate.py --config configs/fr-ln.yaml --split test --baseline --max-samples 500
-```
-
-Hypothèse 1 du mémoire : **BLEU ≥ Qmin = 25**.
+| Métrique | Sens |
+|----------|------|
+| BLEU | Qualité traduction (objectif thesis ≥ 25) |
+| chrF | Similarité caractères |
+| WER | Erreur au niveau mots (plus bas = mieux) |
+| Accuracy | % phrases exactement identiques à la référence |
 
 ## Codes langue NLLB (FLORES-200)
 
@@ -47,23 +67,3 @@ Hypothèse 1 du mémoire : **BLEU ≥ Qmin = 25**.
 | fr-kg | `fra_Latn` | `kon_Latn` |
 | fr-lu | `fra_Latn` | `lua_Latn` |
 | fr-sw | `fra_Latn` | `swh_Latn` |
-
-## Sorties
-
-```
-outputs/nllb-lora-fr-ln/
-  adapter/           # poids LoRA + tokenizer
-  run_config.json
-  eval_valid.json
-  metrics_test_lora.json
-```
-
-## Mémoire GPU (indicative, 600M + LoRA, fp16)
-
-| Setting | Valeur typique |
-|---------|----------------|
-| batch | 4 × accum 8 (= 32 effectif) |
-| max length | 128 |
-| VRAM | ~6–7 Go |
-
-Si OOM : baisser `per_device_train_batch_size` à 2 ou `max_source_length` à 96.

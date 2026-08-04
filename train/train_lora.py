@@ -8,6 +8,7 @@ import json
 import sys
 from pathlib import Path
 
+import numpy as np
 import yaml
 from datasets import disable_caching
 from peft import LoraConfig, TaskType, get_peft_model
@@ -24,6 +25,8 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from data import load_moses_pair, preprocess_function  # noqa: E402
+from metrics_utils import compute_translation_metrics, decode_preds_labels  # noqa: E402
+from plotting import plot_training_curves  # noqa: E402
 
 
 def load_config(path: Path) -> dict:
@@ -38,42 +41,17 @@ def resolve_path(p: str | Path) -> Path:
     return path
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument(
-        "--config",
-        type=Path,
-        default=Path(__file__).parent / "configs" / "fr-ln.yaml",
-        help="YAML config (default: configs/fr-ln.yaml)",
-    )
-    parser.add_argument(
-        "--max-train-samples",
-        type=int,
-        default=None,
-        help="Override config for a quick smoke run",
-    )
-    parser.add_argument(
-        "--max-eval-samples",
-        type=int,
-        default=None,
-        help="Override config eval/test sample cap",
-    )
-    args = parser.parse_args()
-
-    cfg = load_config(args.config)
-    if args.max_train_samples is not None:
-        cfg["max_train_samples"] = args.max_train_samples
-    if args.max_eval_samples is not None:
-        cfg["max_eval_samples"] = args.max_eval_samples
-
+def run_train(cfg: dict) -> Path:
     set_seed(int(cfg.get("seed", 42)))
     disable_caching()
 
     splits_dir = resolve_path(cfg["dataset_root"]) / cfg["pair"] / "splits"
     output_dir = resolve_path(cfg["output_dir"])
+    plots_dir = output_dir / "plots"
     output_dir.mkdir(parents=True, exist_ok=True)
+    plots_dir.mkdir(parents=True, exist_ok=True)
 
-    print(f"Pair      : {cfg['pair']} ({cfg['src_lang']} → {cfg['tgt_lang']})")
+    print(f"Pair      : {cfg['pair']} ({cfg['src_lang']} -> {cfg['tgt_lang']})")
     print(f"Splits    : {splits_dir}")
     print(f"Model     : {cfg['model_name']}")
     print(f"Output    : {output_dir}")
@@ -126,7 +104,28 @@ def main() -> None:
 
     collator = DataCollatorForSeq2Seq(tokenizer=tokenizer, model=model)
 
-    training_args = Seq2SeqTrainingArguments(
+    def compute_metrics(eval_preds):
+        preds, labels = eval_preds
+        if isinstance(preds, tuple):
+            preds = preds[0]
+        # pad to same length if needed
+        preds = np.asarray(preds)
+        labels = np.asarray(labels)
+        hyp, ref = decode_preds_labels(tokenizer, preds, labels)
+        m = compute_translation_metrics(hyp, ref)
+        return {
+            "bleu": m.bleu,
+            "chrf": m.chrf,
+            "wer": m.wer,
+            "accuracy": m.accuracy,
+        }
+
+    eval_strategy = cfg.get("eval_strategy", "epoch")
+    save_strategy = cfg.get("save_strategy", eval_strategy)
+    metric_best = cfg.get("metric_for_best_model", "eval_bleu")
+    greater = bool(cfg.get("greater_is_better", True))
+
+    args_kwargs = dict(
         output_dir=str(output_dir),
         num_train_epochs=float(cfg["num_train_epochs"]),
         per_device_train_batch_size=int(cfg["per_device_train_batch_size"]),
@@ -138,20 +137,23 @@ def main() -> None:
         fp16=bool(cfg.get("fp16", True)),
         bf16=bool(cfg.get("bf16", False)),
         logging_steps=int(cfg["logging_steps"]),
-        eval_strategy="steps",
-        eval_steps=int(cfg["eval_steps"]),
-        save_strategy="steps",
-        save_steps=int(cfg["save_steps"]),
+        eval_strategy=eval_strategy,
+        save_strategy=save_strategy,
         save_total_limit=int(cfg["save_total_limit"]),
-        predict_with_generate=bool(cfg.get("predict_with_generate", True)),
+        predict_with_generate=True,
         generation_max_length=int(cfg.get("generation_max_length", 128)),
         load_best_model_at_end=True,
-        metric_for_best_model="eval_loss",
-        greater_is_better=False,
+        metric_for_best_model=metric_best,
+        greater_is_better=greater,
         report_to=cfg.get("report_to", "none"),
         seed=int(cfg.get("seed", 42)),
         remove_unused_columns=True,
     )
+    if eval_strategy == "steps":
+        args_kwargs["eval_steps"] = int(cfg.get("eval_steps", 500))
+        args_kwargs["save_steps"] = int(cfg.get("save_steps", 500))
+
+    training_args = Seq2SeqTrainingArguments(**args_kwargs)
 
     trainer = Seq2SeqTrainer(
         model=model,
@@ -160,6 +162,7 @@ def main() -> None:
         eval_dataset=tokenized["valid"],
         processing_class=tokenizer,
         data_collator=collator,
+        compute_metrics=compute_metrics,
     )
 
     (output_dir / "run_config.json").write_text(
@@ -175,7 +178,38 @@ def main() -> None:
         json.dumps(metrics, indent=2), encoding="utf-8"
     )
     print("Valid metrics:", metrics)
+
+    history_path = output_dir / "trainer_history.json"
+    history_path.write_text(
+        json.dumps(trainer.state.log_history, indent=2), encoding="utf-8"
+    )
+    plots = plot_training_curves(trainer.state.log_history, plots_dir, cfg["pair"])
+    print("Plots:")
+    for p in plots:
+        print(f"  - {p}")
+
     print(f"Adapter saved to {output_dir / 'adapter'}")
+    return output_dir
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--config",
+        type=Path,
+        default=Path(__file__).parent / "configs" / "fr-ln.yaml",
+        help="YAML config (default: configs/fr-ln.yaml)",
+    )
+    parser.add_argument("--max-train-samples", type=int, default=None)
+    parser.add_argument("--max-eval-samples", type=int, default=None)
+    args = parser.parse_args()
+
+    cfg = load_config(args.config)
+    if args.max_train_samples is not None:
+        cfg["max_train_samples"] = args.max_train_samples
+    if args.max_eval_samples is not None:
+        cfg["max_eval_samples"] = args.max_eval_samples
+    run_train(cfg)
 
 
 if __name__ == "__main__":

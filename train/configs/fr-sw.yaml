@@ -1,4 +1,4 @@
-model_name: facebook/nllb-200-distilled-600M
+﻿model_name: facebook/nllb-200-distilled-600M
 pair: fr-sw
 src_lang: fra_Latn
 tgt_lang: swh_Latn
@@ -21,12 +21,15 @@ weight_decay: 0.01
 warmup_ratio: 0.06
 fp16: true
 bf16: false
-logging_steps: 25
-eval_steps: 200
-save_steps: 200
+logging_steps: 50
+eval_strategy: epoch
+save_strategy: epoch
+metric_for_best_model: eval_bleu
+greater_is_better: true
 save_total_limit: 2
 predict_with_generate: true
 generation_max_length: 128
 seed: 42
 output_dir: outputs/nllb-lora-fr-sw
 report_to: none
+
