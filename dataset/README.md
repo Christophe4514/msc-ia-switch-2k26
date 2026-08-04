@@ -33,11 +33,16 @@ Aussi sur Hugging Face : `Helsinki-NLP/opus-mt-fr-{swc,ln,kg,lu,lua}`.
 dataset/<paire>/
   raw/      # archives .zip OPUS (moses)
   moses/    # bitexts extraits (*.fr / *.<tgt>)
+  splits/   # nettoyé + Train/Valid/Test (80/10/10)
+    train.fr  train.<tgt>
+    valid.fr  valid.<tgt>
+    test.fr   test.<tgt>
+    stats.json
 ```
 
 Snapshots API OPUS : `dataset/sources/opus_fr-*.json`.
 
-## Volumes (paires approximatives)
+## Volumes bruts (avant nettoyage)
 
 | Paire | Corpus principal | ~paires |
 |-------|------------------|---------|
@@ -46,10 +51,30 @@ Snapshots API OPUS : `dataset/sources/opus_fr-*.json`.
 | fr-lu | NLLB (`fr-lua`) | 592 536 |
 | fr-sw | Tatoeba `fr-swc` (172) + GlobalVoices / TED / tico-19 / wikimedia (`fr-sw`) | ~32 k (hors NLLB) |
 
+## Nettoyage + split 80/10/10
+
+```powershell
+python .\dataset\prepare_splits.py
+```
+
+Filtres appliqués : normalisation Unicode/espaces, suppression HTML/URL, phrases vides / trop courtes / trop longues, ratio de longueurs > 3, src≡tgt, dédoublonnage, score LASER NLLB ≥ 1.05 (désactiver avec `--min-laser-score -1`).
+
+Résultat actuel (seed=42) :
+
+| Paire | Brut | Conservé | Train | Valid | Test |
+|-------|------|----------|-------|-------|------|
+| fr-ln | 713 599 | 357 866 | 286 292 | 35 786 | 35 788 |
+| fr-kg | 515 359 | 255 279 | 204 223 | 25 527 | 25 529 |
+| fr-lu | 592 536 | 276 579 | 221 263 | 27 657 | 27 659 |
+| fr-sw | 35 648 | 33 787 | 27 029 | 3 378 | 3 380 |
+
+Le dossier `splits/test.*` sert de jeu de test automatique ; le **Gold Standard** humain (O.S.1) pourra le remplacer ou le compléter plus tard.
+
 Pour Swahili, NLLB `fr-sw` (~5.6 M paires, ~344 Mo) est optionnel :
 
 ```powershell
 .\dataset\download.ps1 -IncludeNllbSw
+python .\dataset\prepare_splits.py --pairs fr-sw
 ```
 
 ## Téléchargement

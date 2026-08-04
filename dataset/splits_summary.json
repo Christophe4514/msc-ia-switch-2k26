@@ -1,0 +1,176 @@
+[
+  {
+    "pair": "fr-ln",
+    "target": "ln",
+    "config": {
+      "min_chars": 3,
+      "max_chars": 500,
+      "max_words": 100,
+      "max_len_ratio": 3.0,
+      "min_laser_score": 1.05,
+      "train_ratio": 0.8,
+      "valid_ratio": 0.1,
+      "test_ratio": 0.1,
+      "seed": 42
+    },
+    "corpora": [
+      "MultiCCAligned-fr-ln.txt",
+      "NLLB-fr-ln.txt",
+      "Tatoeba-fr-ln.txt",
+      "tico-19-fr-ln.txt",
+      "wikimedia-fr-ln.txt",
+      "XLEnt-fr-ln.txt"
+    ],
+    "filter": {
+      "raw_pairs": 713599,
+      "kept": 357866,
+      "empty": 24,
+      "too_short": 130,
+      "too_long": 261,
+      "bad_ratio": 1250,
+      "identical": 148,
+      "low_score": 345721,
+      "duplicates": 8199,
+      "sources": {
+        "MultiCCAligned-fr-ln.txt": 9410,
+        "NLLB-fr-ln.txt": 691883,
+        "Tatoeba-fr-ln.txt": 56,
+        "tico-19-fr-ln.txt": 3071,
+        "wikimedia-fr-ln.txt": 7867,
+        "XLEnt-fr-ln.txt": 1312
+      }
+    },
+    "split_counts": {
+      "train": 286292,
+      "valid": 35786,
+      "test": 35788
+    },
+    "output_dir": "fr-ln\\splits"
+  },
+  {
+    "pair": "fr-kg",
+    "target": "kg",
+    "config": {
+      "min_chars": 3,
+      "max_chars": 500,
+      "max_words": 100,
+      "max_len_ratio": 3.0,
+      "min_laser_score": 1.05,
+      "train_ratio": 0.8,
+      "valid_ratio": 0.1,
+      "test_ratio": 0.1,
+      "seed": 42
+    },
+    "corpora": [
+      "GNOME-fr-kg.txt",
+      "NLLB-fr-kg.txt",
+      "wikimedia-fr-kg.txt"
+    ],
+    "filter": {
+      "raw_pairs": 515359,
+      "kept": 255279,
+      "empty": 2,
+      "too_short": 53,
+      "too_long": 95,
+      "bad_ratio": 3002,
+      "identical": 1400,
+      "low_score": 233484,
+      "duplicates": 22044,
+      "sources": {
+        "GNOME-fr-kg.txt": 13568,
+        "NLLB-fr-kg.txt": 501059,
+        "wikimedia-fr-kg.txt": 732
+      }
+    },
+    "split_counts": {
+      "train": 204223,
+      "valid": 25527,
+      "test": 25529
+    },
+    "output_dir": "fr-kg\\splits"
+  },
+  {
+    "pair": "fr-lu",
+    "target": "lua",
+    "config": {
+      "min_chars": 3,
+      "max_chars": 500,
+      "max_words": 100,
+      "max_len_ratio": 3.0,
+      "min_laser_score": 1.05,
+      "train_ratio": 0.8,
+      "valid_ratio": 0.1,
+      "test_ratio": 0.1,
+      "seed": 42
+    },
+    "corpora": [
+      "NLLB-fr-lua.txt"
+    ],
+    "filter": {
+      "raw_pairs": 592536,
+      "kept": 276579,
+      "empty": 10,
+      "too_short": 54,
+      "too_long": 0,
+      "bad_ratio": 2691,
+      "identical": 2,
+      "low_score": 305820,
+      "duplicates": 7380,
+      "sources": {
+        "NLLB-fr-lua.txt": 592536
+      }
+    },
+    "split_counts": {
+      "train": 221263,
+      "valid": 27657,
+      "test": 27659
+    },
+    "output_dir": "fr-lu\\splits"
+  },
+  {
+    "pair": "fr-sw",
+    "target": "sw",
+    "config": {
+      "min_chars": 3,
+      "max_chars": 500,
+      "max_words": 100,
+      "max_len_ratio": 3.0,
+      "min_laser_score": 1.05,
+      "train_ratio": 0.8,
+      "valid_ratio": 0.1,
+      "test_ratio": 0.1,
+      "seed": 42
+    },
+    "corpora": [
+      "GlobalVoices-fr-sw.txt",
+      "Tatoeba-fr-swc.txt",
+      "TED2020-fr-sw.txt",
+      "tico-19-fr-sw.txt",
+      "wikimedia-fr-sw.txt"
+    ],
+    "filter": {
+      "raw_pairs": 35648,
+      "kept": 33787,
+      "empty": 930,
+      "too_short": 59,
+      "too_long": 279,
+      "bad_ratio": 199,
+      "identical": 108,
+      "low_score": 0,
+      "duplicates": 286,
+      "sources": {
+        "GlobalVoices-fr-sw.txt": 19455,
+        "Tatoeba-fr-swc.txt": 172,
+        "TED2020-fr-sw.txt": 9606,
+        "tico-19-fr-sw.txt": 3071,
+        "wikimedia-fr-sw.txt": 3344
+      }
+    },
+    "split_counts": {
+      "train": 27029,
+      "valid": 3378,
+      "test": 3380
+    },
+    "output_dir": "fr-sw\\splits"
+  }
+]
