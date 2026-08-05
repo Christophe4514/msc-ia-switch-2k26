@@ -71,9 +71,22 @@ def load_model(cfg: dict, adapter_dir: Path | None, baseline: bool):
     )
     model = AutoModelForSeq2SeqLM.from_pretrained(cfg["model_name"])
     if not baseline:
-        if adapter_dir is None or not Path(adapter_dir).exists():
-            raise FileNotFoundError(f"Adapter not found: {adapter_dir}")
-        model = PeftModel.from_pretrained(model, str(adapter_dir))
+        adapter_path = Path(adapter_dir) if adapter_dir else None
+        has_weights = adapter_path and (
+            (adapter_path / "adapter_model.safetensors").exists()
+            or (adapter_path / "adapter_model.bin").exists()
+        )
+        if not has_weights:
+            pair = cfg.get("pair", "?")
+            raise FileNotFoundError(
+                f"Adapter LoRA introuvable pour {pair}: {adapter_dir}\n"
+                f"L'entraînement de cette paire n'est pas encore terminé.\n"
+                f"  - Attendre la fin de: python main.py train-all\n"
+                f"  - Ou entraîner: python main.py train --config train/configs/{pair}.yaml\n"
+                f"  - Ou tester le modèle de base (sans LoRA): "
+                f"python main.py test --config train/configs/{pair}.yaml --baseline --interactive"
+            )
+        model = PeftModel.from_pretrained(model, str(adapter_path))
     model.to(device)
     model.eval()
     return model, tokenizer, device

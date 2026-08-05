@@ -16,6 +16,14 @@ python main.py evaluate --config train/configs/fr-ln.yaml --split test
 
 # Test interactif du modèle
 python main.py test --config train/configs/fr-ln.yaml --interactive
+
+#Pour tester maintenant (modèle NLLB de base, sans fine-tuning) :
+
+python main.py test --config train/configs/fr-kg.yaml --baseline --interactive
+ Pour tester le modèle LoRA : attendre la fin de l’entraînement de cette paire, puis :
+
+
+python main.py test --config train/configs/fr-kg.yaml --in
 ```
 
 Voir `dataset/README.md` (corpus) et `train/README.md` (LoRA / métriques).
