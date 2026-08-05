@@ -7,28 +7,29 @@ Traduction audio FR → langues nationales RDC (lingala, swahili, tshiluba, kiko
 ```powershell
 .\train\.venv\Scripts\Activate.ps1
 
-# Entraînement LoRA (30 epochs)
-python main.py train --config train/configs/fr-ln.yaml
+# Entraînement LoRA rapide (12 epochs max + early stopping, BLEU en fin)
+# Stopper d'abord tout ancien train 30-epochs encore en cours (Ctrl+C)
+python main.py train --config train/configs/fr-sw.yaml
 python main.py train-all
 
-# Test baseline (sans LoRA) / LoRA
+# Test baseline / LoRA
 python main.py test --config train/configs/fr-kg.yaml --baseline --interactive
 python main.py test --config train/configs/fr-ln.yaml --interactive
 
-# Évaluation
+# Évaluation / export ONNX Flutter
 python main.py evaluate --config train/configs/fr-ln.yaml --split test
-
-# Export ONNX pour Flutter
 python main.py export --config train/configs/fr-ln.yaml --baseline
-python main.py export --config train/configs/fr-ln.yaml --lora --int8
 ```
 
 Voir `dataset/README.md`, `train/README.md`, `export/README.md`.
 
-## Rapports / graphiques
+## Config rapide (pourquoi c’est plus court)
 
-```powershell
-python main.py report --pairs fr-ln fr-kg fr-lu fr-sw
-```
+| Réglage | Avant | Maintenant |
+|---------|-------|------------|
+| Epochs | 30 | **12** + early stop (patience 3) |
+| BLEU pendant train | chaque epoch (lent) | **seulement à la fin** |
+| Batch | 4×8 | **8×4** (même batch effectif, moins de steps) |
+| Gros corpus (ln/kg/lu) | tout | **80k** paires max |
 
-Plots dans `outputs/nllb-lora-<paire>/plots/` : accuracy, loss, confusion matrix, CV, scores BLEU/chrF/WER, architecture, hyperparamètres.
+Relancer `fr-sw` avec la nouvelle config (Ctrl+C sur l’ancien job d’abord).
