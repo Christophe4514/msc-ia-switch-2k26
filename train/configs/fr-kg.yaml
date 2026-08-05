@@ -1,5 +1,4 @@
-﻿# @package _global_
-model_name: facebook/nllb-200-distilled-600M
+﻿model_name: facebook/nllb-200-distilled-600M
 pair: fr-kg
 src_lang: fra_Latn
 tgt_lang: kon_Latn
@@ -8,16 +7,16 @@ dataset_root: dataset
 max_source_length: 128
 max_target_length: 128
 max_train_samples: null
-max_eval_samples: 1000
-lora_r: 16
-lora_alpha: 32
+max_eval_samples: 200
+lora_r: 32
+lora_alpha: 64
 lora_dropout: 0.05
 lora_target_modules: [q_proj, v_proj, k_proj, out_proj]
-num_train_epochs: 3
+num_train_epochs: 30
 per_device_train_batch_size: 4
 per_device_eval_batch_size: 4
 gradient_accumulation_steps: 8
-learning_rate: 2.0e-4
+learning_rate: 1.0e-4
 weight_decay: 0.01
 warmup_ratio: 0.03
 fp16: true
@@ -27,10 +26,10 @@ eval_strategy: epoch
 save_strategy: epoch
 metric_for_best_model: eval_bleu
 greater_is_better: true
-save_total_limit: 2
+save_total_limit: 3
 predict_with_generate: true
 generation_max_length: 128
 seed: 42
+resume_from_checkpoint: true
 output_dir: outputs/nllb-lora-fr-kg
 report_to: none
-

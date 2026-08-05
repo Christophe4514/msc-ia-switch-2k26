@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fine-tune NLLB-200 with LoRA (PEFT) on FR→national language splits."""
+"""Fine-tune NLLB-200 with LoRA (PEFT) — 30 epochs, metrics + PNG curves."""
 
 from __future__ import annotations
 
@@ -41,6 +41,28 @@ def resolve_path(p: str | Path) -> Path:
     return path
 
 
+def find_resume_checkpoint(output_dir: Path, cfg: dict) -> str | None:
+    """Resume only if an existing checkpoint matches current LoRA r."""
+    if not cfg.get("resume_from_checkpoint", True):
+        return None
+    run_cfg_path = output_dir / "run_config.json"
+    if run_cfg_path.exists():
+        old = json.loads(run_cfg_path.read_text(encoding="utf-8"))
+        if int(old.get("lora_r", -1)) != int(cfg["lora_r"]):
+            print(
+                f"Checkpoint LoRA r={old.get('lora_r')} != config r={cfg['lora_r']} "
+                "— starting fresh."
+            )
+            return None
+    ckpts = sorted(
+        output_dir.glob("checkpoint-*"),
+        key=lambda p: int(p.name.split("-")[1]),
+    )
+    if not ckpts:
+        return None
+    return str(ckpts[-1])
+
+
 def run_train(cfg: dict) -> Path:
     set_seed(int(cfg.get("seed", 42)))
     disable_caching()
@@ -52,8 +74,9 @@ def run_train(cfg: dict) -> Path:
     plots_dir.mkdir(parents=True, exist_ok=True)
 
     print(f"Pair      : {cfg['pair']} ({cfg['src_lang']} -> {cfg['tgt_lang']})")
+    print(f"Epochs    : {cfg['num_train_epochs']}")
+    print(f"LoRA r    : {cfg['lora_r']}  alpha={cfg['lora_alpha']}")
     print(f"Splits    : {splits_dir}")
-    print(f"Model     : {cfg['model_name']}")
     print(f"Output    : {output_dir}")
 
     raw = load_moses_pair(
@@ -103,12 +126,12 @@ def run_train(cfg: dict) -> Path:
     )
 
     collator = DataCollatorForSeq2Seq(tokenizer=tokenizer, model=model)
+    do_generate = bool(cfg.get("predict_with_generate", True))
 
     def compute_metrics(eval_preds):
         preds, labels = eval_preds
         if isinstance(preds, tuple):
             preds = preds[0]
-        # pad to same length if needed
         preds = np.asarray(preds)
         labels = np.asarray(labels)
         hyp, ref = decode_preds_labels(tokenizer, preds, labels)
@@ -122,8 +145,8 @@ def run_train(cfg: dict) -> Path:
 
     eval_strategy = cfg.get("eval_strategy", "epoch")
     save_strategy = cfg.get("save_strategy", eval_strategy)
-    metric_best = cfg.get("metric_for_best_model", "eval_bleu")
-    greater = bool(cfg.get("greater_is_better", True))
+    metric_best = cfg.get("metric_for_best_model", "eval_bleu" if do_generate else "eval_loss")
+    greater = bool(cfg.get("greater_is_better", do_generate))
 
     args_kwargs = dict(
         output_dir=str(output_dir),
@@ -140,7 +163,7 @@ def run_train(cfg: dict) -> Path:
         eval_strategy=eval_strategy,
         save_strategy=save_strategy,
         save_total_limit=int(cfg["save_total_limit"]),
-        predict_with_generate=True,
+        predict_with_generate=do_generate,
         generation_max_length=int(cfg.get("generation_max_length", 128)),
         load_best_model_at_end=True,
         metric_for_best_model=metric_best,
@@ -162,17 +185,25 @@ def run_train(cfg: dict) -> Path:
         eval_dataset=tokenized["valid"],
         processing_class=tokenizer,
         data_collator=collator,
-        compute_metrics=compute_metrics,
+        compute_metrics=compute_metrics if do_generate else None,
     )
 
     (output_dir / "run_config.json").write_text(
         json.dumps(cfg, ensure_ascii=False, indent=2), encoding="utf-8"
     )
 
-    trainer.train()
+    resume = find_resume_checkpoint(output_dir, cfg)
+    if resume:
+        print(f"Resuming from {resume}")
+    trainer.train(resume_from_checkpoint=resume)
+
     trainer.save_model(str(output_dir / "adapter"))
     tokenizer.save_pretrained(str(output_dir / "adapter"))
 
+    # Final eval with generation for BLEU even if train used loss-only
+    if not do_generate:
+        trainer.args.predict_with_generate = True
+        trainer.compute_metrics = compute_metrics
     metrics = trainer.evaluate(tokenized["valid"])
     (output_dir / "eval_valid.json").write_text(
         json.dumps(metrics, indent=2), encoding="utf-8"
@@ -198,7 +229,6 @@ def main() -> None:
         "--config",
         type=Path,
         default=Path(__file__).parent / "configs" / "fr-ln.yaml",
-        help="YAML config (default: configs/fr-ln.yaml)",
     )
     parser.add_argument("--max-train-samples", type=int, default=None)
     parser.add_argument("--max-eval-samples", type=int, default=None)
