@@ -6,8 +6,8 @@ Usage:
   python main.py train --config train/configs/fr-ln.yaml
   python main.py train-all
   python main.py evaluate --config train/configs/fr-ln.yaml --split test
-  python main.py test --config train/configs/fr-ln.yaml --text "Bonjour"
   python main.py test --config train/configs/fr-ln.yaml --interactive
+  python main.py report --pairs fr-ln fr-kg fr-lu fr-sw
 """
 
 from __future__ import annotations
@@ -73,10 +73,25 @@ def cmd_test(args: argparse.Namespace) -> None:
     )
 
 
+def cmd_report(args: argparse.Namespace) -> None:
+    from generate_reports import generate_report, load_config
+
+    for pair in args.pairs:
+        cfg = load_config(TRAIN / "configs" / f"{pair}.yaml")
+        generate_report(
+            cfg,
+            with_cv=not args.no_cv,
+            cv_samples=args.cv_samples,
+            cv_epochs=args.cv_epochs,
+            cv_folds=args.cv_folds,
+            eval_samples=args.eval_samples,
+        )
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="main.py",
-        description="MSC IA Switch — train / evaluate / test NLLB-LoRA",
+        description="MSC IA Switch — train / evaluate / test / report NLLB-LoRA",
     )
     sub = parser.add_subparsers(dest="command", required=True)
 
@@ -116,6 +131,23 @@ def build_parser() -> argparse.ArgumentParser:
     p_test.add_argument("--interactive", action="store_true")
     p_test.add_argument("--baseline", action="store_true")
     p_test.set_defaults(func=cmd_test)
+
+    p_report = sub.add_parser(
+        "report",
+        help="Generate all thesis plots (accuracy/loss/CM/CV/scores + architecture)",
+    )
+    p_report.add_argument(
+        "--pairs",
+        nargs="*",
+        default=["fr-ln", "fr-kg", "fr-lu", "fr-sw"],
+        choices=["fr-ln", "fr-kg", "fr-lu", "fr-sw"],
+    )
+    p_report.add_argument("--no-cv", action="store_true")
+    p_report.add_argument("--cv-samples", type=int, default=6000)
+    p_report.add_argument("--cv-epochs", type=int, default=2)
+    p_report.add_argument("--cv-folds", type=int, default=5)
+    p_report.add_argument("--eval-samples", type=int, default=500)
+    p_report.set_defaults(func=cmd_report)
 
     return parser
 
