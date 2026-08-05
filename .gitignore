@@ -235,6 +235,7 @@ dataset/**/splits/*.swc
 train/.venv/
 train/logs/
 outputs/
+exports/
 *.pt
 *.bin
 runs/

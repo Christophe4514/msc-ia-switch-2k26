@@ -8,6 +8,8 @@ Usage:
   python main.py evaluate --config train/configs/fr-ln.yaml --split test
   python main.py test --config train/configs/fr-ln.yaml --interactive
   python main.py report --pairs fr-ln fr-kg fr-lu fr-sw
+  python main.py export --config train/configs/fr-ln.yaml --baseline
+  python main.py export --config train/configs/fr-ln.yaml --lora --int8
 """
 
 from __future__ import annotations
@@ -35,7 +37,6 @@ def cmd_train(args: argparse.Namespace) -> None:
 def cmd_train_all(args: argparse.Namespace) -> None:
     from run_all import main as run_all_main
 
-    # Rebuild argv for run_all
     argv = []
     if args.pairs:
         argv.extend(["--pairs", *args.pairs])
@@ -88,10 +89,22 @@ def cmd_report(args: argparse.Namespace) -> None:
         )
 
 
+def cmd_export(args: argparse.Namespace) -> None:
+    from export_onnx import export_pair, load_config
+
+    cfg = load_config(args.config)
+    export_pair(
+        cfg,
+        baseline=not args.lora,
+        adapter=args.adapter,
+        quantize_int8=args.int8,
+    )
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="main.py",
-        description="MSC IA Switch — train / evaluate / test / report NLLB-LoRA",
+        description="MSC IA Switch — train / evaluate / test / report / export NLLB-LoRA",
     )
     sub = parser.add_subparsers(dest="command", required=True)
 
@@ -148,6 +161,29 @@ def build_parser() -> argparse.ArgumentParser:
     p_report.add_argument("--cv-folds", type=int, default=5)
     p_report.add_argument("--eval-samples", type=int, default=500)
     p_report.set_defaults(func=cmd_report)
+
+    p_export = sub.add_parser(
+        "export",
+        help="Export baseline or LoRA-merged model to ONNX for Flutter",
+    )
+    p_export.add_argument("--config", type=Path, required=True)
+    p_export.add_argument(
+        "--baseline",
+        action="store_true",
+        help="Export base NLLB (default if --lora not set)",
+    )
+    p_export.add_argument(
+        "--lora",
+        action="store_true",
+        help="Merge LoRA adapter then export",
+    )
+    p_export.add_argument("--adapter", type=Path, default=None)
+    p_export.add_argument(
+        "--int8",
+        action="store_true",
+        help="Dynamic INT8 quantization (Optimum)",
+    )
+    p_export.set_defaults(func=cmd_export)
 
     return parser
 

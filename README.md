@@ -7,38 +7,28 @@ Traduction audio FR → langues nationales RDC (lingala, swahili, tshiluba, kiko
 ```powershell
 .\train\.venv\Scripts\Activate.ps1
 
-# Entraînement LoRA (+ graphiques PNG : loss, BLEU, WER, accuracy)
+# Entraînement LoRA (30 epochs)
 python main.py train --config train/configs/fr-ln.yaml
 python main.py train-all
 
-# Évaluation test set
-python main.py evaluate --config train/configs/fr-ln.yaml --split test
-
-# Test interactif du modèle
+# Test baseline (sans LoRA) / LoRA
+python main.py test --config train/configs/fr-kg.yaml --baseline --interactive
 python main.py test --config train/configs/fr-ln.yaml --interactive
 
-#Pour tester maintenant (modèle NLLB de base, sans fine-tuning) :
+# Évaluation
+python main.py evaluate --config train/configs/fr-ln.yaml --split test
 
-python main.py test --config train/configs/fr-kg.yaml --baseline --interactive
- Pour tester le modèle LoRA : attendre la fin de l’entraînement de cette paire, puis :
-
-
-python main.py test --config train/configs/fr-kg.yaml --in
+# Export ONNX pour Flutter
+python main.py export --config train/configs/fr-ln.yaml --baseline
+python main.py export --config train/configs/fr-ln.yaml --lora --int8
 ```
 
-Voir `dataset/README.md` (corpus) et `train/README.md` (LoRA / métriques).
+Voir `dataset/README.md`, `train/README.md`, `export/README.md`.
 
-## Rapports / graphiques (4 paires)
+## Rapports / graphiques
 
 ```powershell
 python main.py report --pairs fr-ln fr-kg fr-lu fr-sw
 ```
 
-Génère dans `outputs/nllb-lora-<paire>/plots/` :
-1. accuracy  
-2. loss  
-3. confusion matrix  
-4. accuracy cross-validation  
-5. loss cross-validation  
-6. scores BLEU / chrF / WER / Accuracy  
-+ `architecture.png` et `hyperparameters.png`
+Plots dans `outputs/nllb-lora-<paire>/plots/` : accuracy, loss, confusion matrix, CV, scores BLEU/chrF/WER, architecture, hyperparamètres.
