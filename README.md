@@ -19,9 +19,13 @@ python main.py test --config train/configs/fr-ln.yaml --interactive
 # Évaluation / export ONNX Flutter
 python main.py evaluate --config train/configs/fr-ln.yaml --split test
 python main.py export --config train/configs/fr-ln.yaml --baseline
+
+# Brancher l'app Flutter sur CE modèle (PC = serveur)
+python main.py serve --baseline
+# Puis lancer sw_trans_realtime (voir export/README.md)
 ```
 
-Voir `dataset/README.md`, `train/README.md`, `export/README.md`.
+**Flutter** : le téléphone n’importe pas le dossier Python. Lance `serve`, l’app appelle `http://10.0.2.2:8765` (émulateur). Détail : `export/README.md`.
 
 ## Config rapide (pourquoi c’est plus court)
 
