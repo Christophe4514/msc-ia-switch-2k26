@@ -209,4 +209,4 @@ with gr.Blocks(title="MSC IA Switch — NLLB RDC") as demo:
 demo.queue(default_concurrency_limit=1)
 
 if __name__ == "__main__":
-    demo.launch(ssr=False, server_name="0.0.0.0", server_port=7860)
+    demo.launch()
