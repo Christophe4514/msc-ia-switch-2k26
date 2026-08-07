@@ -1,27 +1,25 @@
-﻿# Phase 2 — LoRA NLLB-200 | 30 epochs | cible BLEU >= 25
+﻿# Fast train — sous-ensemble 80k + early stopping (corpus plein trop long sur RTX 4060)
 model_name: facebook/nllb-200-distilled-600M
-
 pair: fr-ln
 src_lang: fra_Latn
 tgt_lang: lin_Latn
 tgt_file_ext: ln
-
 dataset_root: dataset
 max_source_length: 128
 max_target_length: 128
-max_train_samples: null
-# Eval set réduit pour mesurer BLEU à chaque epoch sans trop ralentir
-max_eval_samples: 200
+max_train_samples: 80000
+max_eval_samples: 256
 
 lora_r: 32
 lora_alpha: 64
 lora_dropout: 0.05
 lora_target_modules: [q_proj, v_proj, k_proj, out_proj]
 
-num_train_epochs: 30
-per_device_train_batch_size: 4
-per_device_eval_batch_size: 4
-gradient_accumulation_steps: 8
+num_train_epochs: 12
+early_stopping_patience: 3
+per_device_train_batch_size: 8
+per_device_eval_batch_size: 8
+gradient_accumulation_steps: 4
 learning_rate: 1.0e-4
 weight_decay: 0.01
 warmup_ratio: 0.03
@@ -30,13 +28,12 @@ bf16: false
 logging_steps: 50
 eval_strategy: epoch
 save_strategy: epoch
-metric_for_best_model: eval_bleu
-greater_is_better: true
-save_total_limit: 3
-predict_with_generate: true
+metric_for_best_model: eval_loss
+greater_is_better: false
+save_total_limit: 2
+predict_with_generate: false
 generation_max_length: 128
 seed: 42
 resume_from_checkpoint: true
-
 output_dir: outputs/nllb-lora-fr-ln
 report_to: none

@@ -1,0 +1,9 @@
+torch
+transformers
+accelerate
+sentencepiece
+protobuf
+peft
+safetensors
+huggingface_hub
+# gradio est fourni par le Space — ne pas le pinner trop bas

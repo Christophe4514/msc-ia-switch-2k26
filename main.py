@@ -10,6 +10,8 @@ Usage:
   python main.py report --pairs fr-ln fr-kg fr-lu fr-sw
   python main.py export --config train/configs/fr-ln.yaml --baseline
   python main.py export --config train/configs/fr-ln.yaml --lora --int8
+  python main.py serve --baseline
+  python main.py serve
 """
 
 from __future__ import annotations
@@ -101,6 +103,17 @@ def cmd_export(args: argparse.Namespace) -> None:
     )
 
 
+def cmd_serve(args: argparse.Namespace) -> None:
+    from serve_api import run_server
+
+    run_server(
+        args.pairs,
+        host=args.host,
+        port=args.port,
+        baseline=args.baseline,
+    )
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="main.py",
@@ -184,6 +197,25 @@ def build_parser() -> argparse.ArgumentParser:
         help="Dynamic INT8 quantization (Optimum)",
     )
     p_export.set_defaults(func=cmd_export)
+
+    p_serve = sub.add_parser(
+        "serve",
+        help="Expose le modèle (LoRA/baseline) en HTTP pour l'app Flutter",
+    )
+    p_serve.add_argument(
+        "--pairs",
+        nargs="*",
+        default=["fr-ln", "fr-kg", "fr-lu", "fr-sw"],
+        choices=["fr-ln", "fr-kg", "fr-lu", "fr-sw"],
+    )
+    p_serve.add_argument("--host", default="0.0.0.0")
+    p_serve.add_argument("--port", type=int, default=8765)
+    p_serve.add_argument(
+        "--baseline",
+        action="store_true",
+        help="Utiliser NLLB de base si LoRA pas encore entraîné",
+    )
+    p_serve.set_defaults(func=cmd_serve)
 
     return parser
 
