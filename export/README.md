@@ -57,6 +57,11 @@ L’app appelle **exactement** le modèle chargé sur le PC.
 
 ---
 
+## Chemin cloud (PC éteint) — gratuit
+
+Space Hugging Face SDK **Gradio** (Docker n’est plus gratuit) : `deploy/README.md`.  
+Flutter : `useLocalThesisServer = false` + `customNllbApiBaseUrl` + `customSpaceIsGradio = true`.
+
 ## Chemin B — hors-ligne sur le téléphone (plus tard)
 
 Quand le train + export sont finis :

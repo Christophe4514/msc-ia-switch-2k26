@@ -25,7 +25,7 @@ python main.py serve --baseline
 # Puis lancer sw_trans_realtime (voir export/README.md)
 ```
 
-**Flutter** : le téléphone n’importe pas le dossier Python. Lance `serve`, l’app appelle `http://10.0.2.2:8765` (émulateur). Détail : `export/README.md`.
+**Flutter** : pour le cloud **gratuit**, crée un Space **Gradio** (pas Docker) — voir `deploy/README.md`.
 
 ## Config rapide (pourquoi c’est plus court)
 
