@@ -41,6 +41,21 @@ def resolve_path(p: str | Path) -> Path:
     return path
 
 
+def _is_valid_checkpoint(ckpt_dir: Path) -> bool:
+    """Trainer resume needs trainer_state + model/adapter weights."""
+    if not (ckpt_dir / "trainer_state.json").exists():
+        return False
+    for name in (
+        "adapter_model.safetensors",
+        "adapter_model.bin",
+        "model.safetensors",
+        "pytorch_model.bin",
+    ):
+        if (ckpt_dir / name).exists():
+            return True
+    return False
+
+
 def find_resume_checkpoint(output_dir: Path, cfg: dict) -> str | None:
     """Resume only if an existing checkpoint matches current LoRA r."""
     if not cfg.get("resume_from_checkpoint", True):
@@ -57,10 +72,18 @@ def find_resume_checkpoint(output_dir: Path, cfg: dict) -> str | None:
     ckpts = sorted(
         output_dir.glob("checkpoint-*"),
         key=lambda p: int(p.name.split("-")[1]),
+        reverse=True,
     )
-    if not ckpts:
-        return None
-    return str(ckpts[-1])
+    for ckpt in ckpts:
+        if _is_valid_checkpoint(ckpt):
+            if ckpt != ckpts[0]:
+                print(
+                    f"Skipping incomplete checkpoint {ckpts[0].name} "
+                    f"→ resuming from {ckpt.name}"
+                )
+            return str(ckpt)
+        print(f"Skipping invalid checkpoint {ckpt.name} (save interrupted?)")
+    return None
 
 
 def run_train(cfg: dict) -> Path:
