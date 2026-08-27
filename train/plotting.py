@@ -43,21 +43,37 @@ def plot_accuracy(epochs, train_acc, val_acc, out_path: Path, pair: str) -> Path
     ax.set_xlabel("Epoch")
     ax.set_ylabel("Accuracy (%)")
     ax.set_title(f"{pair} — Accuracy")
+    ax.set_xlim(0.5, 12.5)
+    ax.set_xticks(range(1, 13))
     ax.set_ylim(0, 100)
     ax.legend()
     return _save(fig, out_path)
 
 
-def plot_loss(epochs, train_loss, val_loss, out_path: Path, pair: str) -> Path:
+def plot_loss(
+    epochs,
+    train_loss,
+    val_loss,
+    out_path: Path,
+    pair: str,
+    *,
+    train_x=None,
+    val_x=None,
+) -> Path:
     _style()
     fig, ax = plt.subplots(figsize=(8, 4.8))
+    tx = train_x if train_x is not None else epochs[: len(train_loss)]
+    vx = val_x if val_x is not None else epochs[: len(val_loss)]
     if train_loss:
-        ax.plot(epochs[: len(train_loss)], train_loss, marker="o", label="Train loss")
+        ax.plot(tx, train_loss, marker=".", markersize=4, linewidth=1.2, label="Train loss")
     if val_loss:
-        ax.plot(epochs[: len(val_loss)], val_loss, marker="s", label="Validation loss")
+        ax.plot(vx, val_loss, marker="s", markersize=5, linewidth=1.5, label="Validation loss")
     ax.set_xlabel("Epoch")
     ax.set_ylabel("Loss")
     ax.set_title(f"{pair} — Loss")
+    if val_x and all(isinstance(x, int) for x in val_x):
+        ax.set_xlim(0.5, 12.5)
+        ax.set_xticks(range(1, 13))
     ax.legend()
     return _save(fig, out_path)
 

@@ -114,6 +114,18 @@ def cmd_serve(args: argparse.Namespace) -> None:
     )
 
 
+def cmd_replot(args: argparse.Namespace) -> None:
+    from regenerate_plots import main as replot_main
+
+    argv = ["regenerate_plots.py"]
+    if args.pairs:
+        argv.extend(["--pairs", *args.pairs])
+    if args.max_train_points is not None:
+        argv.extend(["--max-train-points", str(args.max_train_points)])
+    sys.argv = argv
+    replot_main()
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="main.py",
@@ -216,6 +228,24 @@ def build_parser() -> argparse.ArgumentParser:
         help="Utiliser NLLB de base si LoRA pas encore entraîné",
     )
     p_serve.set_defaults(func=cmd_serve)
+
+    p_replot = sub.add_parser(
+        "replot",
+        help="Regénère loss / accuracy / scores depuis trainer_history.json",
+    )
+    p_replot.add_argument(
+        "--pairs",
+        nargs="*",
+        default=["fr-ln", "fr-kg", "fr-lu", "fr-sw"],
+        choices=["fr-ln", "fr-kg", "fr-lu", "fr-sw"],
+    )
+    p_replot.add_argument(
+        "--max-train-points",
+        type=int,
+        default=50,
+        help="Sous-échantillonnage train loss (lisibilité)",
+    )
+    p_replot.set_defaults(func=cmd_replot)
 
     return parser
 
