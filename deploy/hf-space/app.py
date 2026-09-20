@@ -18,6 +18,7 @@ import gradio as gr
 import torch
 
 # ZeroGPU (optionnel) — ignore si Space en CPU basic
+#-------------------------------------------------------
 try:
     import spaces
 
